@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "alarm-app",
-    "slug": "alarm-app",
+    "name": "Bondilarma",
+    "slug": "bondilarma",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -19,6 +19,11 @@
       "supportsTablet": true
     },
     "android": {
+      "config" : {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
