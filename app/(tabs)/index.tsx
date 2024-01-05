@@ -15,6 +15,7 @@ import { defaultStyles } from "constants/Styles";
 import SelectDropdown from "react-native-select-dropdown";
 import { dataStorageService } from "services/DataStorageService";
 import { AlarmType, AlarmTypeKeys, LocationType } from "types";
+import { checkAndRequestLocationPermission } from "services/LocationTrackingService";
 
 export default function MapScreen() {
   const { width, height } = Dimensions.get("window");
@@ -54,6 +55,10 @@ export default function MapScreen() {
   };
 
   useEffect(() => {
+    checkAndRequestLocationPermission();
+  }, []);
+
+  useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -70,11 +75,8 @@ export default function MapScreen() {
 
   const generateTimeOptions = () => {
     const options = [];
-    for (let hours = 0; hours <= 5; hours++) {
-      for (let minutes = 0; minutes < 60; minutes += 10) {
-        const time = `${hours}:${minutes === 0 ? "00" : minutes}`;
-        options.push(time);
-      }
+    for (let squares = 0; squares <= 20; squares++) {
+        options.push(squares);
     }
     return options;
   };
@@ -100,17 +102,17 @@ export default function MapScreen() {
             <View>
               <Text style={styles.label}>Nombre de la alarma</Text>
               <TextInput
-                onChangeText={(text) => handleChangeAlarmData("name", text)}
+                onChangeText={(text: string) => handleChangeAlarmData("name", text)}
                 style={defaultStyles.inputField}
               />
             </View>
             <View>
               <Text style={styles.label}>
-                Elegir tiempo (cuando sonará la alarma)
+                Elegir distancia (a cuantas cuadras sonará la alarma)
               </Text>
               <SelectDropdown
                 data={timeOptions}
-                defaultButtonText="Elegir tiempo"
+                defaultButtonText="Elegir distancia"
                 onSelect={(selectedItem) => {
                   handleChangeAlarmData("totalMinutes", selectedItem);
                 }}
@@ -124,9 +126,9 @@ export default function MapScreen() {
                 buttonTextStyle={styles.dropdownButtonText}
                 dropdownStyle={styles.dropdownContainer}
               />
-              {alarmData?.totalMinutes && (
+              {alarmData?.totalDistance && (
                 <Text style={{ color: "red" }}>
-                  La alarma sonara en {alarmData.totalMinutes} minutos
+                  La alarma sonara a {alarmData.totalDistance} cuadras
                 </Text>
               )}
             </View>

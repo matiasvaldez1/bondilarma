@@ -1,5 +1,5 @@
 export interface AlarmType {
-  totalMinutes: string;
+  totalDistance: number;
   createdAt: string;
   name: string;
   isActive: boolean;

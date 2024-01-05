@@ -60,7 +60,6 @@ export default function AlarmScreen() {
       {alarms?.length === 0 && <Text>No hay ninguna alarma activada</Text>}
       {alarms?.map((alarm) => {
         if (!alarm.isActive) return null;
-        console.log(alarm)
         return (
           <View
             style={{
