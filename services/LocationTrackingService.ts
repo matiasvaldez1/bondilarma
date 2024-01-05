@@ -1,7 +1,7 @@
 import { Platform } from "react-native";
 import * as Location from "expo-location";
 import { isCloseToTargetLocation } from "utils/isCloseToTargetLocation";
-import { playAlarm } from "./AlarmService";
+import { dataStorageService } from "./DataStorageService";
 
 export const IS_IOS: boolean = Platform.OS === "ios";
 
@@ -15,7 +15,6 @@ export const checkAndRequestLocationPermission = async () => {
     }
 
     if (IS_IOS) {
-      // For iOS, you may also need to request background location permission
       const { status: backgroundStatus } =
         await Location.requestBackgroundPermissionsAsync();
       if (backgroundStatus !== "granted") {
@@ -36,24 +35,27 @@ const startBackgroundGeolocation = async () => {
       accuracy: Location.Accuracy.High,
     });
 
-    // Set up your BackgroundGeolocation logic here
-    // Example:
     Location.watchPositionAsync(
       {
-        accuracy: 1,
+        accuracy: Location.Accuracy.High,
         distanceInterval: 1,
-        timeInterval: 5000,
+        timeInterval: 1000,
       },
-      (location) => {
-        console.log("Location update", location);
+      async (location) => {
+        const alarm = await dataStorageService.getAlarm();
+        if (!alarm) return;
+
+        const targetLocation = {
+          latitude: alarm.destinationPlace.latitude,
+          longitude: alarm.destinationPlace.longitude,
+        };
 
         const currentLocation = {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         };
 
-        const targetLocation = { latitude: 37.7749, longitude: -122.4194 };
-        const proximityThreshold = 0.1;
+        const proximityThreshold = alarm.totalDistance;
 
         const closeToTarget = isCloseToTargetLocation(
           currentLocation,
@@ -62,8 +64,12 @@ const startBackgroundGeolocation = async () => {
         );
 
         if (closeToTarget) {
-          playAlarm();
+          console.log("IM CLOSE")
+          return;
+          /* playAlarm(); */
         }
+        console.log("IM NOT CLOSE")
+
       }
     );
   } catch (error) {

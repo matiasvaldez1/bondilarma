@@ -9,10 +9,10 @@ class DataStorageService {
       if (data !== null) {
         return JSON.parse(data) as T;
       }
-      return null
+      return null;
     } catch (error) {
       console.error("Error loading data:", error);
-      return null
+      return null;
     }
   }
 
@@ -25,41 +25,45 @@ class DataStorageService {
     }
   }
 
+  private async clear() {
+    try {
+      await AsyncStorage.clear();
+    } catch (error) {
+      console.error("Error clearing data:", error);
+    }
+  }
+
   public async saveAlarm(alarm: AlarmType): Promise<void> {
     try {
-      const existingAlarms = await this.load<any>(ALARMS_KEY);
-  
-      let alarms: AlarmType[] = existingAlarms || [];
-  
-      alarms.push(alarm);
-  
-      await this.save(ALARMS_KEY, alarms);
+      const existingAlarm = await this.load<any>(ALARMS_KEY);
+
+      if (existingAlarm) {
+        console.error("Ya hay una alarma creada");
+        return;
+      }
+
+      await this.save(ALARMS_KEY, alarm);
     } catch (error) {
       console.error("Error saving alarm data:", error);
     }
   }
-  
-  async getAlarms() {
+
+  async getAlarm() {
     try {
-      const alarmsList = await this.load<AlarmType[]>(ALARMS_KEY);
-      if (alarmsList) {
-        return alarmsList;
+      const alarm = await this.load<AlarmType>(ALARMS_KEY);
+      if (alarm) {
+        return alarm;
       }
     } catch (error) {
       console.error("Error getting alarm data:", error);
     }
   }
 
-  async deleteAlarmByName(name: string): Promise<void> {
+  async deleteAlarm(): Promise<void> {
     try {
-      const existingAlarms = await this.load<AlarmType[]>(ALARMS_KEY);
-
-      if (existingAlarms) {
-        const updatedAlarms = existingAlarms.filter((alarm) => alarm.name !== name);
-        await this.save(ALARMS_KEY, updatedAlarms);
-      }
+      await this.clear();
     } catch (error) {
-      console.error('Error deleting alarm data:', error);
+      console.error("Error deleting alarm data:", error);
     }
   }
 }

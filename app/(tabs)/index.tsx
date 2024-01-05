@@ -16,13 +16,15 @@ import SelectDropdown from "react-native-select-dropdown";
 import { dataStorageService } from "services/DataStorageService";
 import { AlarmType, AlarmTypeKeys, LocationType } from "types";
 import { checkAndRequestLocationPermission } from "services/LocationTrackingService";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function MapScreen() {
   const { width, height } = Dimensions.get("window");
   const [alarmData, setAlarmData] = useState<AlarmType | null>();
   const [modalVisible, setModalVisible] = useState(false);
-  const [pinLocation, setPinLocation] = useState(null);
+  const [pinLocation, setPinLocation] = useState<LocationType | null>(null);
   const [location, setLocation] = useState<LocationType | null>(null);
+  const focused = useIsFocused();
 
   const handleMapPress = (e: any) => {
     setPinLocation(e.nativeEvent.coordinate);
@@ -33,16 +35,18 @@ export default function MapScreen() {
     setModalVisible(!modalVisible);
     setAlarmData(null);
   };
-
   const handleCreateAlarm = async () => {
-    if (!alarmData || !location) return;
+    if (!alarmData || !location || !pinLocation) return;
     await dataStorageService.saveAlarm({
       ...alarmData,
       createdAt: Date(),
       isActive: true,
-      destinationPlace: location,
+      destinationPlace: pinLocation,
     });
     Alert.alert("Alarma creada");
+
+    setAlarmData(null);
+
     setTimeout(() => setModalVisible(!modalVisible), 2000);
   };
 
@@ -71,12 +75,12 @@ export default function MapScreen() {
     return () => {
       setAlarmData(null);
     };
-  }, []);
+  }, [focused]);
 
   const generateTimeOptions = () => {
     const options = [];
     for (let squares = 0; squares <= 20; squares++) {
-        options.push(squares);
+      options.push(squares);
     }
     return options;
   };
@@ -102,7 +106,9 @@ export default function MapScreen() {
             <View>
               <Text style={styles.label}>Nombre de la alarma</Text>
               <TextInput
-                onChangeText={(text: string) => handleChangeAlarmData("name", text)}
+                onChangeText={(text: string) =>
+                  handleChangeAlarmData("name", text)
+                }
                 style={defaultStyles.inputField}
               />
             </View>
@@ -114,7 +120,7 @@ export default function MapScreen() {
                 data={timeOptions}
                 defaultButtonText="Elegir distancia"
                 onSelect={(selectedItem) => {
-                  handleChangeAlarmData("totalMinutes", selectedItem);
+                  handleChangeAlarmData("totalDistance", selectedItem);
                 }}
                 buttonTextAfterSelection={(selectedItem) => {
                   return selectedItem;
@@ -147,16 +153,25 @@ export default function MapScreen() {
         </View>
       </Modal>
       <MapView
-        zoomEnabled
-        zoomControlEnabled
-        showsUserLocation
-        onPress={handleMapPress}
+        zoomEnabled={true}
+        scrollEnabled={true}
+        showsScale={true}
+        zoomControlEnabled={true}
+        zoomTapEnabled={true}
+        rotateEnabled={false}
+        showsUserLocation={true}
+        userLocationUpdateInterval={5000}
+        showsMyLocationButton={true}
+        loadingEnabled={true}
+        showsCompass={true}
         initialRegion={{
           latitude: location.latitude,
           longitude: location.longitude,
           latitudeDelta: 1,
           longitudeDelta: 1,
         }}
+        loadingIndicatorColor="white"
+        onPress={handleMapPress}
         style={{ flex: 1, width: width * 1, height: height * 0.6 }}
       >
         {pinLocation && <Marker coordinate={pinLocation} />}

@@ -6,7 +6,7 @@ export interface AlarmType {
   destinationPlace: LocationType;
 }
 
-export type AlarmTypeKeys = "totalMinutes" | "createdAt" | "name";
+export type AlarmTypeKeys = "totalDistance" | "createdAt" | "name";
 
 export interface LocationType {
   longitude: number;

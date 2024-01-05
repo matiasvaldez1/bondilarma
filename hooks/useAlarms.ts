@@ -1,20 +1,26 @@
 import { useEffect, useState } from "react";
 import { AlarmType } from "types";
 import { dataStorageService } from "services/DataStorageService";
+import { useIsFocused } from "@react-navigation/native";
 
 const useAlarms = () => {
-  const [alarms, setAlarms] = useState<AlarmType[] | null>(null);
+  const [alarm, setAlarm] = useState<AlarmType | null>(null);
   const [loading, setLoading] = useState(false);
+  const focused = useIsFocused();
 
-  const fetchAlarms = async () => {
+  const fetchAlarm = async () => {
+    setAlarm(null);
     try {
       setLoading(true);
-      const alarmsList = await dataStorageService.getAlarms();
+      const alarm = await dataStorageService.getAlarm();
 
-      if (alarmsList) {
-        setAlarms(alarmsList);
+      if (alarm) {
+        setAlarm(alarm);
         setLoading(false);
+        return;
       }
+      setAlarm(null);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching alarm data:", error);
       setLoading(false);
@@ -22,10 +28,12 @@ const useAlarms = () => {
   };
 
   useEffect(() => {
-    fetchAlarms();
-  }, []);
+    if (focused) {
+      fetchAlarm();
+    }
+  }, [focused]);
 
-  return { alarms, refetch: fetchAlarms, loading };
+  return { alarm, refetch: fetchAlarm, loading };
 };
 
 export default useAlarms;
