@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Text,
   View,
@@ -10,21 +10,25 @@ import {
   TextInput,
 } from "react-native";
 import * as Location from "expo-location";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { defaultStyles } from "constants/Styles";
 import SelectDropdown from "react-native-select-dropdown";
 import { dataStorageService } from "services/DataStorageService";
 import { AlarmType, AlarmTypeKeys, LocationType } from "types";
 import { checkAndRequestLocationPermission } from "services/LocationTrackingService";
 import { useIsFocused } from "@react-navigation/native";
+import * as DocumentPicker from "expo-document-picker";
+import { reloadAsync } from "expo-updates";
 
 export default function MapScreen() {
   const { width, height } = Dimensions.get("window");
   const [alarmData, setAlarmData] = useState<AlarmType | null>();
   const [modalVisible, setModalVisible] = useState(false);
+  const [appLoaded, setAppLoaded] = useState(false);
   const [pinLocation, setPinLocation] = useState<LocationType | null>(null);
   const [location, setLocation] = useState<LocationType | null>(null);
   const focused = useIsFocused();
+  const mapRef = useRef<MapView | null>(null);
 
   const handleMapPress = (e: any) => {
     setPinLocation(e.nativeEvent.coordinate);
@@ -47,7 +51,7 @@ export default function MapScreen() {
 
     setAlarmData(null);
 
-    setTimeout(() => setModalVisible(!modalVisible), 2000);
+    setTimeout(() => setModalVisible(!modalVisible), 1000);
   };
 
   const handleChangeAlarmData = (name: AlarmTypeKeys, value: string) => {
@@ -56,6 +60,20 @@ export default function MapScreen() {
         ? { ...prev, [name]: value }
         : ({ [name]: value } as unknown as AlarmType)
     );
+  };
+
+  const handlePickAlarmAudio = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "audio/*",
+      });
+      if (!result.canceled) {
+        setAlarmData((prev) => ({ ...prev, audio: result.assets } as any));
+        Alert.alert("Audio elegido correctamente.");
+      }
+    } catch (err) {
+      console.error("Couldn't pick audio", err);
+    }
   };
 
   useEffect(() => {
@@ -76,6 +94,16 @@ export default function MapScreen() {
       setAlarmData(null);
     };
   }, [focused]);
+
+  useEffect(() => {
+    if (appLoaded && mapRef.current && !mapRef.current?.state.isReady) {
+      reloadAsync();
+    }
+  }, [mapRef.current, appLoaded]);
+
+  useEffect(() => {
+    setAppLoaded(true);
+  }, []);
 
   const generateTimeOptions = () => {
     const options = [];
@@ -138,6 +166,18 @@ export default function MapScreen() {
                 </Text>
               )}
             </View>
+            <View>
+              <Pressable onPress={handlePickAlarmAudio}>
+                <Text style={{ color: "blue" }}>
+                  Elegí un audio para la alarma
+                </Text>
+                {alarmData?.audio && (
+                  <Text style={{ color: "green" }}>
+                    {alarmData?.audio[0].name}
+                  </Text>
+                )}
+              </Pressable>
+            </View>
             <View style={{ gap: 10 }}>
               <Pressable style={defaultStyles.btn} onPress={handleCreateAlarm}>
                 <Text style={defaultStyles.btnText}>Crear alarma</Text>
@@ -153,6 +193,8 @@ export default function MapScreen() {
         </View>
       </Modal>
       <MapView
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
         zoomEnabled={true}
         scrollEnabled={true}
         showsScale={true}

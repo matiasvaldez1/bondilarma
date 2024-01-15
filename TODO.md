@@ -4,10 +4,9 @@
 
 ## To Do
 
-- [ ] Sound alarm when arriving to place minus "distance to" distance
-- [ ] Refactor most of the pages
-- [ ] Fix loading or having to reload issue
-- [ ] Make sure everything loads as needed
+- [ ] Refactor code for most of the pages
+- [ ] Refactor UI
+- [ ] Make sure android build works
 - [ ] Add testing
 - [ ] Add storybook and documentation
 

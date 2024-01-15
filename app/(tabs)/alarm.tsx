@@ -36,6 +36,8 @@ export default function AlarmScreen() {
             borderWidth: 1,
             borderRadius: 10,
             padding: 20,
+            paddingLeft: 40,
+            paddingRight: 40,
           }}
           key={alarm?.createdAt}
         >

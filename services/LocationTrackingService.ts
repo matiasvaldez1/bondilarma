@@ -2,6 +2,8 @@ import { Platform } from "react-native";
 import * as Location from "expo-location";
 import { isCloseToTargetLocation } from "utils/isCloseToTargetLocation";
 import { dataStorageService } from "./DataStorageService";
+import { playDefaultAlarm, playUserAlarm } from "./AlarmService";
+import { Audio } from "expo-av";
 
 export const IS_IOS: boolean = Platform.OS === "ios";
 
@@ -32,14 +34,17 @@ export const checkAndRequestLocationPermission = async () => {
 const startBackgroundGeolocation = async () => {
   try {
     await Location.startLocationUpdatesAsync("backgroundLocationTask", {
-      accuracy: Location.Accuracy.High,
+      accuracy: Location.Accuracy.Highest,
+      foregroundService: {
+        notificationTitle: "BackgroundLocation Is On",
+        notificationBody: "We are tracking your location",
+        notificationColor: "#ffce52",
+      },
     });
 
-    Location.watchPositionAsync(
+    await Location.watchPositionAsync(
       {
-        accuracy: Location.Accuracy.High,
-        distanceInterval: 1,
-        timeInterval: 1000,
+        accuracy: Location.Accuracy.Highest,
       },
       async (location) => {
         const alarm = await dataStorageService.getAlarm();
@@ -62,14 +67,15 @@ const startBackgroundGeolocation = async () => {
           targetLocation,
           proximityThreshold
         );
-
         if (closeToTarget) {
-          console.log("IM CLOSE")
+          if (alarm?.audio) {
+            await playUserAlarm(alarm.audio);
+          } else {
+            await playDefaultAlarm();
+          }
+          await dataStorageService.deleteAlarm();
           return;
-          /* playAlarm(); */
         }
-        console.log("IM NOT CLOSE")
-
       }
     );
   } catch (error) {

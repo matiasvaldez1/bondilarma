@@ -16,8 +16,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: "./assets/adaptive-icon.png",
-      backgroundColor: "#FFFFFF",
+      foregroundImage: "./assets/images/favicon.png",
+      backgroundColor: "#008080",
     },
     config: {
       googleMaps: {
