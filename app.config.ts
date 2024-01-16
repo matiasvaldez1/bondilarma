@@ -7,7 +7,13 @@ dotenv.config();
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "Bondilarma",
+  owner: "mati1212",
   slug: "bondilarma",
+  extra: {
+    eas: {
+      projectId: process.env.PROJECT_ID,
+    },
+  },
   ios: {
     supportsTablet: true,
     config: {
@@ -15,6 +21,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
   android: {
+    package: "com.mati.bondilarma",
+    versionCode: 1,
     adaptiveIcon: {
       foregroundImage: "./assets/images/favicon.png",
       backgroundColor: "#008080",

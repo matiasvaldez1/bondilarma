@@ -8,7 +8,7 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/app-icon.jpg",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#008080"
     },
@@ -17,6 +17,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.mati.bondilarma",
+      "versionCode": 1,
       "config": {
         "googleMaps": {
           "apiKey": ""

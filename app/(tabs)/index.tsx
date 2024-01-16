@@ -76,11 +76,19 @@ export default function MapScreen() {
     }
   };
 
+  const goToMyLocation = async () => {
+    if (!location) return;
+    mapRef?.current?.animateCamera({
+      center: { latitude: location.latitude, longitude: location.longitude },
+    });
+  };
+
   useEffect(() => {
     checkAndRequestLocationPermission();
   }, []);
 
   useEffect(() => {
+    if (location) return;
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -93,13 +101,19 @@ export default function MapScreen() {
     return () => {
       setAlarmData(null);
     };
-  }, [focused]);
+  }, [focused, location, appLoaded]);
 
   useEffect(() => {
     if (appLoaded && mapRef.current && !mapRef.current?.state.isReady) {
       reloadAsync();
     }
   }, [mapRef.current, appLoaded]);
+
+  useEffect(() => {
+    if (location) {
+      goToMyLocation();
+    }
+  }, [location]);
 
   useEffect(() => {
     setAppLoaded(true);
@@ -114,8 +128,6 @@ export default function MapScreen() {
   };
 
   const timeOptions = generateTimeOptions();
-
-  if (!location) return <Text>Cargando..</Text>;
 
   return (
     <View style={styles.container}>
@@ -206,9 +218,9 @@ export default function MapScreen() {
         showsMyLocationButton={true}
         loadingEnabled={true}
         showsCompass={true}
-        initialRegion={{
-          latitude: location.latitude,
-          longitude: location.longitude,
+        region={{
+          latitude: location?.latitude ?? 0,
+          longitude: location?.longitude ?? 0,
           latitudeDelta: 1,
           longitudeDelta: 1,
         }}
